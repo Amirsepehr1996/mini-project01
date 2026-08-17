@@ -39,3 +39,8 @@ X_test_scaled = scaler.transform(X_test)
 
 
 joblib.dump(scaler, r"E:\mini-project01\models\scaler.pkl")
+
+joblib.dump(X_train_scaled, r"E:\mini-project01\data\X_train_scaled.pkl")
+joblib.dump(X_test_scaled, r"E:\mini-project01\data\X_test_scaled.pkl")
+joblib.dump(y_train, r"E:\mini-project01\data\y_train.pkl")
+joblib.dump(y_test, r"E:\mini-project01\data\y_test.pkl")
