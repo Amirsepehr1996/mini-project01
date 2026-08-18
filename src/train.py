@@ -1,12 +1,13 @@
 import joblib
 import numpy as np
 import pandas as pd
+import os
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import recall_score, precision_score, f1_score
+from sklearn.metrics import recall_score, precision_score, f1_score, confusion_matrix
 
 X = joblib.load(r"E:\mini-project01\data\X_train_scaled.pkl")
 y = joblib.load(r"E:\mini-project01\data\y_train.pkl")
@@ -159,3 +160,108 @@ print(results_df.to_string(index=False))
 
 
 # Hyperparameters Selected, Train on Whole Training Data
+# best hyperparameters for MLP:   lr_init=0.001, threshold=0.3
+# best hyperparameters for LR:    threshold=0.2
+# best hyperparameters for KNN:   k = 3
+# best hyperparameters for DT:    max_depth=5
+
+# Saving paths
+model_dir = r"E:\mini-project01\models"
+report_dir = r"E:\mini-project01\reports"
+
+# best models based on cv
+best_models = {
+
+    "Logistic Regression": {
+        "model": LogisticRegression(
+            random_state=42,
+            max_iter=1000
+        ),
+        "threshold": 0.2,
+        "filename": "logistic_regression.pkl"
+    },
+
+    "KNN": {
+        "model": KNeighborsClassifier(
+            n_neighbors=3
+        ),
+        "threshold": None,
+        "filename": "knn.pkl"
+    },
+
+    "Decision Tree": {
+        "model": DecisionTreeClassifier(
+            max_depth=5,
+            random_state=42
+        ),
+        "threshold": None,
+        "filename": "decision_tree.pkl"
+    },
+
+    "MLP": {
+        "model": MLPClassifier(
+            hidden_layer_sizes=(32, 16),
+            activation="relu",
+            solver="adam",
+            learning_rate_init=0.001,
+            random_state=42,
+            max_iter=300
+        ),
+        "threshold": 0.3,
+        "filename": "mlp.pkl"
+    }
+}
+
+# train and evaluate
+
+final_results = []
+
+for name, info in best_models.items():
+
+    model = info["model"]
+    model.fit(X, y)
+
+    # prediction
+    if info["threshold"] is None:
+        y_pred = model.predict(X)
+    else:
+        y_prob = model.predict_proba(X)[:, 1]
+        y_pred = (y_prob >= info["threshold"]).astype(int)
+
+    TN, FP, FN, TP = confusion_matrix(y, y_pred).ravel()
+
+    final_results.append({
+        "Model": name,
+        "Recall": recall_score(y, y_pred),
+        "Precision": precision_score(y, y_pred),
+        "F1": f1_score(y, y_pred),
+        "TP": TP,
+        "TN": TN,
+        "FP": FP,
+        "FN": FN
+    })
+
+    # saving model
+    joblib.dump(
+        model,
+        os.path.join(model_dir, info["filename"])
+    )
+
+# Results Table
+final_df = pd.DataFrame(final_results)
+
+print(final_df)
+
+# Save the table 
+markdown = "# Final Training Models Performance\n\n"
+markdown += final_df.to_markdown(index=False)
+
+with open(
+    os.path.join(report_dir, "experiments.md"),
+    "w",
+    encoding="utf-8"
+) as f:
+    f.write(markdown)
+
+print("\nResults saved to:")
+print(os.path.join(report_dir, "experiments.md"))
