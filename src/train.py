@@ -8,11 +8,9 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import recall_score, precision_score, f1_score
 
-# Load the processed data
 X = joblib.load(r"E:\mini-project01\data\X_train_scaled.pkl")
 y = joblib.load(r"E:\mini-project01\data\y_train.pkl")
 
-# 5-Fold Stratified Cross Validation
 skf = StratifiedKFold(
     n_splits=5,
     shuffle=True,
@@ -21,13 +19,11 @@ skf = StratifiedKFold(
 
 results = []
 
-# Hyperparameter grids
 thrs = [0.2, 0.3, 0.4, 0.5]
 ks = [3, 5, 7, 10, 15]
 Depths = [2, 5, 10, 15, None]
 alphas = [0.05, 0.01, 0.005, 0.001]
 
-#  Logistic Regression 
 for thr in thrs:
 
     recalls = []
@@ -59,7 +55,6 @@ for thr in thrs:
         "F1": np.mean(f1_scores)
     })
 
-#  KNN
 for k in ks:
 
     recalls = []
@@ -90,7 +85,6 @@ for k in ks:
         "F1": np.mean(f1_scores)
     })
 
-# Decision Tree  
 for depth in Depths:
 
     recalls = []
@@ -121,44 +115,47 @@ for depth in Depths:
         "F1": np.mean(f1_scores)
     })
 
-# MLP 
 for alpha in alphas:
+    for thr in thrs:
 
-    recalls = []
-    precisions = []
-    f1_scores = []
+        recalls = []
+        precisions = []
+        f1_scores = []
 
-    for train_idx, test_idx in skf.split(X, y):
+        for train_idx, test_idx in skf.split(X, y):
 
-        X_train = X[train_idx]
-        X_test = X[test_idx]
+            X_train = X[train_idx]
+            X_test = X[test_idx]
 
-        y_train = y.iloc[train_idx]
-        y_test = y.iloc[test_idx]
+            y_train = y.iloc[train_idx]
+            y_test = y.iloc[test_idx]
 
-        mlp = MLPClassifier(
-            hidden_layer_sizes=(32, 16),
-            activation='relu',
-            solver='adam',
-            learning_rate_init=alpha,
-            random_state=42,
-            max_iter=300
-        )
-        mlp.fit(X_train, y_train)
-        y_pred_mlp = mlp.predict(X_test)
+            mlp = MLPClassifier(
+                hidden_layer_sizes=(32, 16),
+                activation='relu',
+                solver='adam',
+                learning_rate_init=alpha,
+                random_state=42,
+                max_iter=300
+            )
+            mlp.fit(X_train, y_train)
+            y_proba_mlp = mlp.predict_proba(X_test)[:, 1]
+            y_pred_mlp = (y_proba_mlp >= thr).astype(int)
 
-        recalls.append(recall_score(y_test, y_pred_mlp))
-        precisions.append(precision_score(y_test, y_pred_mlp))
-        f1_scores.append(f1_score(y_test, y_pred_mlp))
+            recalls.append(recall_score(y_test, y_pred_mlp))
+            precisions.append(precision_score(y_test, y_pred_mlp))
+            f1_scores.append(f1_score(y_test, y_pred_mlp))
 
-    results.append({
-        "Model": "MLP",
-        "Params": f"lr_init={alpha}",
-        "Recall": np.mean(recalls),
-        "Precision": np.mean(precisions),
-        "F1": np.mean(f1_scores)
-    })
+        results.append({
+            "Model": "MLP",
+            "Params": f"lr_init={alpha}, threshold={thr}",
+            "Recall": np.mean(recalls),
+            "Precision": np.mean(precisions),
+            "F1": np.mean(f1_scores)
+        })
 
-#  Final results table for CV (MODEL SELECTIONS)
 results_df = pd.DataFrame(results)
 print(results_df.to_string(index=False))
+
+
+# Hyperparameters Selected, Train on Whole Training Data
