@@ -39,7 +39,8 @@ for thr in thrs:
         y_train = y.iloc[train_idx]
         y_test = y.iloc[test_idx]
 
-        lr = LogisticRegression(random_state=42, max_iter=1000)
+        # due to overfitting, we add regularization term: C=0.1
+        lr = LogisticRegression(random_state=42, max_iter=1000, C=0.1)
         lr.fit(X_train, y_train)
         y_proba_lr = lr.predict_proba(X_test)[:, 1]
         y_pred_lr = (y_proba_lr >= thr).astype(int)
@@ -100,7 +101,8 @@ for depth in Depths:
         y_train = y.iloc[train_idx]
         y_test = y.iloc[test_idx]
 
-        dt = DecisionTreeClassifier(max_depth=depth, random_state=42)
+        # due to overfitting, we add min_samples_leaf=10, min_samples_split=20
+        dt = DecisionTreeClassifier(max_depth=depth, random_state=42, min_samples_leaf=10, min_samples_split=20)
         dt.fit(X_train, y_train)
         y_pred_dt = dt.predict(X_test)
 
@@ -131,9 +133,14 @@ for alpha in alphas:
             y_train = y.iloc[train_idx]
             y_test = y.iloc[test_idx]
 
+            # due to overfitting, smaller hidden layers, add L2, and early stopping
             mlp = MLPClassifier(
-                hidden_layer_sizes=(32, 16),
+                hidden_layer_sizes=(16, 8),
                 activation='relu',
+                alpha=0.001,
+                early_stopping=True,
+                validation_fraction=0.1,
+                n_iter_no_change=10,
                 solver='adam',
                 learning_rate_init=alpha,
                 random_state=42,
@@ -166,102 +173,102 @@ print(results_df.to_string(index=False))
 # best hyperparameters for DT:    max_depth=5
 
 # Saving paths
-model_dir = r"E:\mini-project01\models"
-report_dir = r"E:\mini-project01\reports"
+# model_dir = r"E:\mini-project01\models"
+# report_dir = r"E:\mini-project01\reports"
 
-# best models based on cv
-best_models = {
+# # best models based on cv
+# best_models = {
 
-    "Logistic Regression": {
-        "model": LogisticRegression(
-            random_state=42,
-            max_iter=1000
-        ),
-        "threshold": 0.2,
-        "filename": "logistic_regression.pkl"
-    },
+#     "Logistic Regression": {
+#         "model": LogisticRegression(
+#             random_state=42,
+#             max_iter=1000
+#         ),
+#         "threshold": 0.2,
+#         "filename": "logistic_regression.pkl"
+#     },
 
-    "KNN": {
-        "model": KNeighborsClassifier(
-            n_neighbors=3
-        ),
-        "threshold": None,
-        "filename": "knn.pkl"
-    },
+#     "KNN": {
+#         "model": KNeighborsClassifier(
+#             n_neighbors=3
+#         ),
+#         "threshold": None,
+#         "filename": "knn.pkl"
+#     },
 
-    "Decision Tree": {
-        "model": DecisionTreeClassifier(
-            max_depth=5,
-            random_state=42
-        ),
-        "threshold": None,
-        "filename": "decision_tree.pkl"
-    },
+#     "Decision Tree": {
+#         "model": DecisionTreeClassifier(
+#             max_depth=5,
+#             random_state=42
+#         ),
+#         "threshold": None,
+#         "filename": "decision_tree.pkl"
+#     },
 
-    "MLP": {
-        "model": MLPClassifier(
-            hidden_layer_sizes=(32, 16),
-            activation="relu",
-            solver="adam",
-            learning_rate_init=0.001,
-            random_state=42,
-            max_iter=300
-        ),
-        "threshold": 0.3,
-        "filename": "mlp.pkl"
-    }
-}
+#     "MLP": {
+#         "model": MLPClassifier(
+#             hidden_layer_sizes=(32, 16),
+#             activation="relu",
+#             solver="adam",
+#             learning_rate_init=0.001,
+#             random_state=42,
+#             max_iter=300
+#         ),
+#         "threshold": 0.3,
+#         "filename": "mlp.pkl"
+#     }
+# }
 
 # train and evaluate
 
-final_results = []
+# final_results = []
 
-for name, info in best_models.items():
+# for name, info in best_models.items():
 
-    model = info["model"]
-    model.fit(X, y)
+#     model = info["model"]
+#     model.fit(X, y)
 
-    # prediction
-    if info["threshold"] is None:
-        y_pred = model.predict(X)
-    else:
-        y_prob = model.predict_proba(X)[:, 1]
-        y_pred = (y_prob >= info["threshold"]).astype(int)
+#     # prediction
+#     if info["threshold"] is None:
+#         y_pred = model.predict(X)
+#     else:
+#         y_prob = model.predict_proba(X)[:, 1]
+#         y_pred = (y_prob >= info["threshold"]).astype(int)
 
-    TN, FP, FN, TP = confusion_matrix(y, y_pred).ravel()
+#     TN, FP, FN, TP = confusion_matrix(y, y_pred).ravel()
 
-    final_results.append({
-        "Model": name,
-        "Recall": recall_score(y, y_pred),
-        "Precision": precision_score(y, y_pred),
-        "F1": f1_score(y, y_pred),
-        "TP": TP,
-        "TN": TN,
-        "FP": FP,
-        "FN": FN
-    })
+#     final_results.append({
+#         "Model": name,
+#         "Recall": recall_score(y, y_pred),
+#         "Precision": precision_score(y, y_pred),
+#         "F1": f1_score(y, y_pred),
+#         "TP": TP,
+#         "TN": TN,
+#         "FP": FP,
+#         "FN": FN
+#     })
 
-    # saving model
-    joblib.dump(
-        model,
-        os.path.join(model_dir, info["filename"])
-    )
+#     # saving model
+#     joblib.dump(
+#         model,
+#         os.path.join(model_dir, info["filename"])
+#     )
 
-# Results Table
-final_df = pd.DataFrame(final_results)
+# # Results Table
+# final_df = pd.DataFrame(final_results)
 
-print(final_df)
+# print(final_df)
 
-# Save the table 
-markdown = "# Final Training Models Performance\n\n"
-markdown += final_df.to_markdown(index=False)
+# # Save the table 
+# markdown = "# Final Training Models Performance\n\n"
+# markdown += final_df.to_markdown(index=False)
 
-with open(
-    os.path.join(report_dir, "experiments.md"),
-    "w",
-    encoding="utf-8"
-) as f:
-    f.write(markdown)
+# with open(
+#     os.path.join(report_dir, "experiments.md"),
+#     "w",
+#     encoding="utf-8"
+# ) as f:
+#     f.write(markdown)
 
-print("\nResults saved to:")
-print(os.path.join(report_dir, "experiments.md"))
+# print("\nResults saved to:")
+# print(os.path.join(report_dir, "experiments.md"))
