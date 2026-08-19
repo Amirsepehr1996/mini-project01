@@ -12,158 +12,158 @@ from sklearn.metrics import recall_score, precision_score, f1_score, confusion_m
 X = joblib.load(r"E:\mini-project01\data\X_train_scaled.pkl")
 y = joblib.load(r"E:\mini-project01\data\y_train.pkl")
 
-# skf = StratifiedKFold(
-#     n_splits=5,
-#     shuffle=True,
-#     random_state=42
-# )
+skf = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=42
+)
 
-# results = []
+results = []
 
-# thrs = [0.2, 0.3, 0.4, 0.5]
-# ks = [3, 5, 7, 10, 15]
-# Depths = [2, 5, 10, 15, None]
-# alphas = [0.05, 0.01, 0.005, 0.001]
+thrs = [0.2, 0.3, 0.4, 0.5]
+ks = [3, 5, 7, 10, 15]
+Depths = [2, 5, 10, 15, None]
+alphas = [0.05, 0.01, 0.005, 0.001]
 
-# for thr in thrs:
+for thr in thrs:
 
-#     recalls = []
-#     precisions = []
-#     f1_scores = []
+    recalls = []
+    precisions = []
+    f1_scores = []
 
-#     for train_idx, test_idx in skf.split(X, y):
+    for train_idx, test_idx in skf.split(X, y):
 
-#         X_train = X[train_idx]
-#         X_test = X[test_idx]
+        X_train = X[train_idx]
+        X_test = X[test_idx]
 
-#         y_train = y.iloc[train_idx]
-#         y_test = y.iloc[test_idx]
+        y_train = y.iloc[train_idx]
+        y_test = y.iloc[test_idx]
 
-#         # due to overfitting, we add regularization term: C=0.1
-#         lr = LogisticRegression(random_state=42, max_iter=1000, C=0.1)
-#         lr.fit(X_train, y_train)
-#         y_proba_lr = lr.predict_proba(X_test)[:, 1]
-#         y_pred_lr = (y_proba_lr >= thr).astype(int)
+        # due to overfitting, we add regularization term: C=0.1
+        lr = LogisticRegression(random_state=42, max_iter=1000, C=0.1)
+        lr.fit(X_train, y_train)
+        y_proba_lr = lr.predict_proba(X_test)[:, 1]
+        y_pred_lr = (y_proba_lr >= thr).astype(int)
 
-#         recalls.append(recall_score(y_test, y_pred_lr))
-#         precisions.append(precision_score(y_test, y_pred_lr))
-#         f1_scores.append(f1_score(y_test, y_pred_lr))
+        recalls.append(recall_score(y_test, y_pred_lr))
+        precisions.append(precision_score(y_test, y_pred_lr))
+        f1_scores.append(f1_score(y_test, y_pred_lr))
 
-#     results.append({
-#         "Model": "Logistic Regression",
-#         "Params": f"threshold={thr}",
-#         "Recall": np.mean(recalls),
-#         "Precision": np.mean(precisions),
-#         "F1": np.mean(f1_scores)
-#     })
+    results.append({
+        "Model": "Logistic Regression",
+        "Params": f"threshold={thr}",
+        "Recall": np.mean(recalls),
+        "Precision": np.mean(precisions),
+        "F1": np.mean(f1_scores)
+    })
 
-# for k in ks:
+for k in ks:
 
-#     recalls = []
-#     precisions = []
-#     f1_scores = []
+    recalls = []
+    precisions = []
+    f1_scores = []
 
-#     for train_idx, test_idx in skf.split(X, y):
+    for train_idx, test_idx in skf.split(X, y):
 
-#         X_train = X[train_idx]
-#         X_test = X[test_idx]
+        X_train = X[train_idx]
+        X_test = X[test_idx]
 
-#         y_train = y.iloc[train_idx]
-#         y_test = y.iloc[test_idx]
+        y_train = y.iloc[train_idx]
+        y_test = y.iloc[test_idx]
 
-#         knn = KNeighborsClassifier(n_neighbors=k)
-#         knn.fit(X_train, y_train)
-#         y_pred_knn = knn.predict(X_test)
+        knn = KNeighborsClassifier(n_neighbors=k)
+        knn.fit(X_train, y_train)
+        y_pred_knn = knn.predict(X_test)
 
-#         recalls.append(recall_score(y_test, y_pred_knn))
-#         precisions.append(precision_score(y_test, y_pred_knn))
-#         f1_scores.append(f1_score(y_test, y_pred_knn))
+        recalls.append(recall_score(y_test, y_pred_knn))
+        precisions.append(precision_score(y_test, y_pred_knn))
+        f1_scores.append(f1_score(y_test, y_pred_knn))
 
-#     results.append({
-#         "Model": "KNN",
-#         "Params": f"k={k}",
-#         "Recall": np.mean(recalls),
-#         "Precision": np.mean(precisions),
-#         "F1": np.mean(f1_scores)
-#     })
+    results.append({
+        "Model": "KNN",
+        "Params": f"k={k}",
+        "Recall": np.mean(recalls),
+        "Precision": np.mean(precisions),
+        "F1": np.mean(f1_scores)
+    })
 
-# for depth in Depths:
+for depth in Depths:
 
-#     recalls = []
-#     precisions = []
-#     f1_scores = []
+    recalls = []
+    precisions = []
+    f1_scores = []
 
-#     for train_idx, test_idx in skf.split(X, y):
+    for train_idx, test_idx in skf.split(X, y):
 
-#         X_train = X[train_idx]
-#         X_test = X[test_idx]
+        X_train = X[train_idx]
+        X_test = X[test_idx]
 
-#         y_train = y.iloc[train_idx]
-#         y_test = y.iloc[test_idx]
+        y_train = y.iloc[train_idx]
+        y_test = y.iloc[test_idx]
 
-#         # due to overfitting, we add min_samples_leaf=10, min_samples_split=20
-#         dt = DecisionTreeClassifier(max_depth=depth, random_state=42, min_samples_leaf=10, min_samples_split=20)
-#         dt.fit(X_train, y_train)
-#         y_pred_dt = dt.predict(X_test)
+        # due to overfitting, we add min_samples_leaf=10, min_samples_split=20
+        dt = DecisionTreeClassifier(max_depth=depth, random_state=42, min_samples_leaf=10, min_samples_split=20)
+        dt.fit(X_train, y_train)
+        y_pred_dt = dt.predict(X_test)
 
-#         recalls.append(recall_score(y_test, y_pred_dt))
-#         precisions.append(precision_score(y_test, y_pred_dt))
-#         f1_scores.append(f1_score(y_test, y_pred_dt))
+        recalls.append(recall_score(y_test, y_pred_dt))
+        precisions.append(precision_score(y_test, y_pred_dt))
+        f1_scores.append(f1_score(y_test, y_pred_dt))
 
-#     results.append({
-#         "Model": "Decision Tree",
-#         "Params": f"max_depth={depth}",
-#         "Recall": np.mean(recalls),
-#         "Precision": np.mean(precisions),
-#         "F1": np.mean(f1_scores)
-#     })
+    results.append({
+        "Model": "Decision Tree",
+        "Params": f"max_depth={depth}",
+        "Recall": np.mean(recalls),
+        "Precision": np.mean(precisions),
+        "F1": np.mean(f1_scores)
+    })
 
-# for alpha in alphas:
-#     for thr in thrs:
+for alpha in alphas:
+    for thr in thrs:
 
-#         recalls = []
-#         precisions = []
-#         f1_scores = []
+        recalls = []
+        precisions = []
+        f1_scores = []
 
-#         for train_idx, test_idx in skf.split(X, y):
+        for train_idx, test_idx in skf.split(X, y):
 
-#             X_train = X[train_idx]
-#             X_test = X[test_idx]
+            X_train = X[train_idx]
+            X_test = X[test_idx]
 
-#             y_train = y.iloc[train_idx]
-#             y_test = y.iloc[test_idx]
+            y_train = y.iloc[train_idx]
+            y_test = y.iloc[test_idx]
 
-#             # due to overfitting, smaller hidden layers, add L2, and early stopping
-#             mlp = MLPClassifier(
-#                 hidden_layer_sizes=(16, 8),
-#                 activation='relu',
-#                 alpha=0.001,
-#                 early_stopping=True,
-#                 validation_fraction=0.1,
-#                 n_iter_no_change=10,
-#                 solver='adam',
-#                 learning_rate_init=alpha,
-#                 random_state=42,
-#                 max_iter=300
-#             )
-#             mlp.fit(X_train, y_train)
-#             y_proba_mlp = mlp.predict_proba(X_test)[:, 1]
-#             y_pred_mlp = (y_proba_mlp >= thr).astype(int)
+            # due to overfitting, smaller hidden layers, add L2, and early stopping
+            mlp = MLPClassifier(
+                hidden_layer_sizes=(16, 8),
+                activation='relu',
+                alpha=0.001,
+                early_stopping=True,
+                validation_fraction=0.1,
+                n_iter_no_change=10,
+                solver='adam',
+                learning_rate_init=alpha,
+                random_state=42,
+                max_iter=300
+            )
+            mlp.fit(X_train, y_train)
+            y_proba_mlp = mlp.predict_proba(X_test)[:, 1]
+            y_pred_mlp = (y_proba_mlp >= thr).astype(int)
 
-#             recalls.append(recall_score(y_test, y_pred_mlp))
-#             precisions.append(precision_score(y_test, y_pred_mlp))
-#             f1_scores.append(f1_score(y_test, y_pred_mlp))
+            recalls.append(recall_score(y_test, y_pred_mlp))
+            precisions.append(precision_score(y_test, y_pred_mlp))
+            f1_scores.append(f1_score(y_test, y_pred_mlp))
 
-#         results.append({
-#             "Model": "MLP",
-#             "Params": f"lr_init={alpha}, threshold={thr}",
-#             "Recall": np.mean(recalls),
-#             "Precision": np.mean(precisions),
-#             "F1": np.mean(f1_scores)
-#         })
+        results.append({
+            "Model": "MLP",
+            "Params": f"lr_init={alpha}, threshold={thr}",
+            "Recall": np.mean(recalls),
+            "Precision": np.mean(precisions),
+            "F1": np.mean(f1_scores)
+        })
 
-# results_df = pd.DataFrame(results)
-# print(results_df.to_string(index=False))
+results_df = pd.DataFrame(results)
+print(results_df.to_string(index=False))
 
 
 # Hyperparameters Selected, Train on Whole Training Data
