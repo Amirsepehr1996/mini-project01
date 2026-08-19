@@ -1,6 +1,7 @@
 import joblib
 import pandas as pd
 from sklearn.metrics import confusion_matrix, recall_score, precision_score, f1_score
+import os
 
 
 X = joblib.load(r"E:\mini-project01\data\X_test_scaled.pkl")
@@ -49,3 +50,18 @@ for name, pred in models.items():
 # Create DataFrame
 df_results = pd.DataFrame(results)
 print(df_results)
+
+# Save
+report_dir = r"E:\mini-project01\reports"
+markdown = "# Final Testing Models Performance\n\n"
+markdown += df_results.to_markdown(index=False)
+
+with open(
+    os.path.join(report_dir, "experiments.md"),
+    "a",
+    encoding="utf-8"
+) as f:
+    f.write(markdown)
+
+print("\nResults saved to:")
+print(os.path.join(report_dir, "experiments.md"))
